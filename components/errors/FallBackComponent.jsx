@@ -1,25 +1,18 @@
 import React from "react";
-import { View } from "react-native";
-import {Button, ButtonText, Text, VStack, Heading} from "@gluestack-ui/themed"
-import { useErrorBoundary } from "react-error-boundary"; 
+import { Center, VStack, Heading, Button, Text } from "@gluestack-ui/themed";
 
-const FallbackComponent = ({error}) => {
-    const {resetBoundary} = useErrorBoundary()
-    return (
-        <View style={{
-            flex: 1, justifyContent: "center", alignItems: 'center', padding: 20
-        }}>
-            <VStack space="md" alignItems="center">
-                <Heading size="xl">Oops, something went wrong!</Heading>
-                    <Text>{error.message}</Text>
-                    <Button onPress={resetBoundary}>
-                        <ButtonText>
-                            Try Again
-                        </ButtonText>
-                    </Button>
-            </VStack>
-        </View>
-    )
-}
+const FallbackComponent = ({ error, retry }) => {
+  return (
+    <Center className="flex-1 px-4 bg-background-100"> {/* Tailwind utility classes -> Default background */}
+      <VStack className="space-y-4 items-center">
+        <Heading className="text-xl text-primary">Oops, something went wrong!</Heading>
+        <Text className="text-muted">{error.message}</Text>
+        <Button className="bg-primary text-white" onPress={retry}>
+          Try Again
+        </Button>
+      </VStack>
+    </Center>
+  );
+};
 
-export default FallbackComponent
+export default FallbackComponent;
