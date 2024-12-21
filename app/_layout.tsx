@@ -4,13 +4,11 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { ErrorBoundary } from 'react-error-boundary'; // Use for React-specific error handling
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { config } from "@/components/ui/gluestack-ui-provider/config";
 import FallBackComponent from "../components/errors/FallBackComponent";
 import { globalErrorHandler, globalNativeErrorHandler } from "../lib/globalErrorHandler";
@@ -30,10 +28,12 @@ setNativeExceptionHandler((errorString) => {
 });
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  const [hasError, setHasError] = useState(false);
+  const [errorDetails, setErrorDetails] = useState(null);
 
   useEffect(() => {
     if (loaded) {
@@ -41,22 +41,53 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  // Reset error state function
+  const resetError = () => {
+    setHasError(false);
+    setErrorDetails(null);
+  };
 
-  return (
-    <ErrorBoundary 
-      FallbackComponent={FallBackComponent} 
-      onError={(error, info) => globalErrorHandler(error, false, info)}
-    >
-      <GluestackUIProvider config={config}>
+  // Handle JavaScript exceptions for rendering-level errors
+  const handleComponentError = (error: any) => {
+    console.error("Rendering error caught:", error);
+    setHasError(true);
+    setErrorDetails(error);
+  };
+
+  // Example usage: Wrapping the entire application logic in a try-catch
+  try {
+    if (!loaded) {
+      return null;
+    }
+
+    if (hasError) {
+      return (
+        <FallBackComponent 
+          error={errorDetails} 
+          retry={resetError} 
+        />
+      );
+    }
+
+    return (
+      // @ts-ignore
+<GluestackUIProvider config={config}>
+
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
       </GluestackUIProvider>
-    </ErrorBoundary>
-  );
+    );
+  } catch (error) {
+    // Catch any rendering errors and handle them
+    handleComponentError(error);
+    return (
+      <FallBackComponent 
+        error={error} 
+        retry={resetError} 
+      />
+    );
+  }
 }

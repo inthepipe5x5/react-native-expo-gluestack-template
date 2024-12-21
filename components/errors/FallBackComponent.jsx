@@ -1,5 +1,7 @@
 import React from "react";
-import { Center, VStack, Heading, Button, Text } from "@gluestack-ui/themed";
+import { Center } from '@gluestack-ui/themed';
+import { VStack } from '@gluestack-ui/vstack';
+import { Heading, Button, Text } from '@gluestack-ui/themed';
 
 const FallbackComponent = ({ error, retry }) => {
   return (
